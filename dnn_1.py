@@ -132,6 +132,7 @@ elif FLAGS.job_name == "worker":
 		start_time = time.time()
 #		for epoch in range(training_epochs):
                 epoch=0
+		final_acc = 0
                 while( final_acc < target_acc):
 
                         print("Epoch %d" % epoch)
