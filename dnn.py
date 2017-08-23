@@ -65,13 +65,13 @@ elif FLAGS.job_name == "worker":
 		with tf.name_scope("weights"):
 #			W1 = tf.Variable(tf.random_normal([784, 100]))
 #			W2 = tf.Variable(tf.random_normal([100, 10]))
-			W1 = tf.Variable(tf.random_normal([784, 100]))
-			W2 = tf.Variable(tf.random_normal([100, 10]))
+			W1 = tf.Variable(tf.random_normal([784, 200]))
+			W2 = tf.Variable(tf.random_normal([200, 10]))
 
 
 		# bias
 		with tf.name_scope("biases"):
-			b1 = tf.Variable(tf.zeros([100]))
+			b1 = tf.Variable(tf.zeros([200]))
 			b2 = tf.Variable(tf.zeros([10]))
 
 		# implement model
