@@ -92,7 +92,7 @@ elif FLAGS.job_name == "worker":
 		# specify optimizer
 		with tf.name_scope('train'):
 			# optimizer is an "operation" which we can execute in a session
-			# grad_op = tf.train.GradientDescentOptimizer(learning_rate)
+			grad_op = tf.train.GradientDescentOptimizer(learning_rate)
                         grad_op = tf.train.SyncReplicasOptimizer(grad_op, replicas_to_aggregate=len(workers), total_num_replicas=len(workers))
 			train_op = grad_op.minimize(cross_entropy, global_step=global_step)
 			
