@@ -24,7 +24,7 @@ cluster = tf.train.ClusterSpec({"ps":parameter_servers, "worker":workers})
 # input flags
 tf.app.flags.DEFINE_string("job_name", "", "Either 'ps' or 'worker'")
 tf.app.flags.DEFINE_integer("task_index", 0, "Index of task within the job")
-tf.app.flags.DEFINE_float("target_accuracy", 0.9, "Target accuracy of given model")
+tf.app.flags.DEFINE_float("target_accuracy", 0.5, "Target accuracy of given model")
 FLAGS = tf.app.flags.FLAGS
 
 # start a server for a specific task
@@ -35,7 +35,7 @@ server = tf.train.Server(
 
 # config
 batch_size = 100
-learning_rate = 0.01
+learning_rate = 0.1
 #training_epochs = 20
 target_acc = FLAGS.target_accuracy
 logs_path = "./tmp/"
@@ -67,13 +67,13 @@ elif FLAGS.job_name == "worker":
 		with tf.name_scope("weights"):
 #			W1 = tf.Variable(tf.random_normal([784, 100]))
 #			W2 = tf.Variable(tf.random_normal([100, 10]))
-			W1 = tf.Variable(tf.random_normal([784, 200]))
-			W2 = tf.Variable(tf.random_normal([200, 10]))
+			W1 = tf.Variable(tf.random_normal([784, 50]))
+			W2 = tf.Variable(tf.random_normal([50, 10]))
 
 
 		# bias
 		with tf.name_scope("biases"):
-			b1 = tf.Variable(tf.zeros([200]))
+			b1 = tf.Variable(tf.zeros([50]))
 			b2 = tf.Variable(tf.zeros([10]))
 
 		# implement model
@@ -94,7 +94,7 @@ elif FLAGS.job_name == "worker":
 			# optimizer is an "operation" which we can execute in a session
 			grad_op = tf.train.GradientDescentOptimizer(learning_rate)
                         grad_op = tf.train.SyncReplicasOptimizer(grad_op, replicas_to_aggregate=len(workers), total_num_replicas=len(workers))
-			train_op = grad_op.minimize(cross_entropy, global_step=global_step)
+			train_op = grad_op.minimize(cross_entropy, global_step=global_step, aggregation_method=tf.AggregationMethod.ADD_N)
 			
 
 		with tf.name_scope('Accuracy'):
