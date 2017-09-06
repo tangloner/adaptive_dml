@@ -36,7 +36,7 @@ server = tf.train.Server(
 # config
 batch_size = 100
 learning_rate = 0.01
-#training_epochs = 20
+training_epochs = 100
 target_acc = FLAGS.target_accuracy
 logs_path = "./tmp/"
 
@@ -148,7 +148,7 @@ elif FLAGS.job_name == "worker":
 				_, cost, summary, step = sess.run([train_op, cross_entropy, summary_op, global_step], 	feed_dict={x: batch_x, y_: batch_y})
                                 final_acc =  sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels})
 				writer.add_summary(summary, step)
-                                if(final_acc >= target_acc)
+                                if(final_acc >= target_acc):
                                     break
 				count += 1
 				if count % frequency == 0 or i+1 == batch_count:
