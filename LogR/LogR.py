@@ -10,9 +10,12 @@ import ftrl_model
 import time
 from logging.config import dictConfig
 
-logging.config.fileConfig('/root/code/LogicRgression/logger.conf')
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
+logging.config.fileConfig('./logger.conf')
 logger = logging.getLogger()
+
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -20,17 +23,10 @@ FLAGS = flags.FLAGS
 sync_queue_name_template = 'sync_queue_{}'
 
 flags.DEFINE_float('learning_rate', 0.5, 'Initial learning rate.')
-tf.app.flags.DEFINE_string(
-    'ps_hosts', 'tf-ps0:2222,tf-ps1:1111',
-    'Comma-separated list of hostname:port for the parameter server jobs. e.g. "tf-ps0:2222,tf-ps1:1111" ')
-tf.app.flags.DEFINE_string(
-    'worker_hosts', 'tf-worker0:2222,tf-worker1:1111',
-    'Comma-separated list of hostname:port for the worker jobs.'
-    'e.g. "tf-worker0:2222,tf-worker1:1111" ')
 flags.DEFINE_integer('num_epochs', 120, 'Number of epochs to run trainer.')
 flags.DEFINE_integer('batch_size', 500, 'Batch size. Must divide evenly into the dataset sizes.')
 flags.DEFINE_integer('features', 3231961, 'Feature size')
-flags.DEFINE_integer('line_skip_count', 1, 'Skip token for input lines')
+flags.DEFINE_integer('line_skip_count', 0, 'Skip token for input lines')
 flags.DEFINE_string('train', '', 'train file')
 flags.DEFINE_string('test', '', 'test file')
 flags.DEFINE_string('job_name', 'worker', 'job name')
@@ -38,6 +34,7 @@ flags.DEFINE_string('log_dir', None, 'log dir')
 flags.DEFINE_integer('task_index', 0, 'task index')
 flags.DEFINE_integer('data_index_start', 10, 'data index start')
 flags.DEFINE_integer('data_index_end', 0, 'data index end')
+
 def read_batch(sess, train_data, batch_size):
     label_list = []
     ids = []
@@ -84,6 +81,9 @@ def get_sync_queue(num_ps):
         logger.info('Create sync queue name: {}'.format(sync_queue_name))
         enqueue_ops.append(queue.enqueue(1))
     return enqueue_ops
+
+
+
 timerStart=time.time()
 logger.info("Time start!!!!!!!!!!!!!!!!!!!!!!!!!!")
 learning_rate = FLAGS.learning_rate
@@ -94,11 +94,15 @@ data_index_start=FLAGS.data_index_start
 data_index_end=FLAGS.data_index_end
 testset_file =  FLAGS.test.split(',')
 log_dir = FLAGS.log_dir
-ps_hosts = FLAGS.ps_hosts.split(',')
-worker_hosts = FLAGS.worker_hosts.split(',')
-cluster_spec = tf.train.ClusterSpec({"ps":ps_hosts, "worker":worker_hosts})
 
-num_workers = len(worker_hosts)
+ps_hosts = sys.argv[1].split(',')
+print(ps_hosts)
+workers = sys.argv[2].split(',')
+print(workers)
+cluster = tf.train.ClusterSpec({"ps":parameter_servers, "worker":workers})
+
+
+num_workers = len(workers)
 num_ps = len(ps_hosts)
 
 server = tf.train.Server(cluster_spec, job_name=FLAGS.job_name, task_index = FLAGS.task_index)
@@ -109,7 +113,7 @@ if FLAGS.job_name == "ps":
     queue = tf.FIFOQueue(1, tf.int32, shared_name=sync_queue_name)
     dequeue_op = queue.dequeue()
     sess = tf.Session(server.target)
-    logger.info('Parameter servier will monitor queue: {}'.format(sync_queue_name))
+    logger.info('Parameter server will monitor queue: {}'.format(sync_queue_name))
     sess.run(dequeue_op)  
     logger.info("Terminating parameter server: {}".format(FLAGS.task_index))
 
@@ -119,7 +123,6 @@ elif FLAGS.job_name == "worker" :
         with tf.device(
                 tf.train.replica_device_setter(
                     worker_device="/job:worker/task:%d" % FLAGS.task_index,
-                    ps_device="/job:ps/cpu:0",
                     cluster = cluster_spec)) :
 	    #timerStart== time.time()
             global_step = tf.get_variable('global_step', [], initializer = tf.constant_initializer(0), trainable = False)
@@ -138,9 +141,7 @@ elif FLAGS.job_name == "worker" :
             _, train_data_line = train_reader.read(train_filename_queue)
 
             model = ftrl_model.FTRLDistributeModel(num_features, learning_rate, num_workers, global_step)
-
             opt = model.opt
-
             sync_init_op = opt.get_init_tokens_op()
             chief_queue_runner = opt.get_chief_queue_runner()
 
@@ -153,9 +154,7 @@ elif FLAGS.job_name == "worker" :
 		local_init_op = opt.chief_init_op
 
             local_init_op = [local_init_op, tf.initialize_local_variables()]
-
             ready_for_local_init_op = opt.ready_for_local_init_op
-
             saver = tf.train.Saver([model.weight])
 
             sv = tf.train.Supervisor(
@@ -171,8 +170,7 @@ elif FLAGS.job_name == "worker" :
             config = tf.ConfigProto(
                     allow_soft_placement=True,
                     log_device_placement=False,
-                    device_filters=["/job:ps", "/job:worker/task:%d" % FLAGS.task_index]
-                    )
+                    device_filters=["/job:ps", "/job:worker/task:%d" % FLAGS.task_index])
 
             logger.info('Start waiting/prepare for session.')
             sess = sv.prepare_or_wait_for_session(server.target, config=config)

@@ -10,6 +10,7 @@ class OptimizerName:
     ADAM = 'adam'
     FTRL = 'ftrl'
     SGD  =  'sgd'
+
 class FTRLDistributeModel:
     def __init__(
             self,
