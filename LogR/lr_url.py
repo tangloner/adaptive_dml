@@ -10,10 +10,16 @@ import tensorflow as tf
 import sys
 import time
 from time import sleep
+import readData
 
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
+loadURL = readData.SVMLightData('./url_svmlight/Day0.svm')
+urldata = loadURL.get_data()
+print(len(urldata))
+
+'''
 parameter_servers = sys.argv[1].split(',')
 print(parameter_servers);
 workers = sys.argv[2].split(',')
@@ -133,9 +139,8 @@ elif FLAGS.job_name == "worker":
 #		for epoch in range(training_epochs):
                 epoch=0
 		final_acc = 0
-#                while( final_acc < target_acc):
-		for epoch in range(training_epochs):
-                
+                while( final_acc < target_acc):
+
                         print("Current Accuracy %2.2f" % final_acc)
 			# number of batches in one epoch
 			batch_count = int(mnist.train.num_examples/batch_size)
@@ -148,8 +153,7 @@ elif FLAGS.job_name == "worker":
 				_, cost, summary, step = sess.run([train_op, cross_entropy, summary_op, global_step], 	feed_dict={x: batch_x, y_: batch_y})
                                 final_acc =  sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels})
 				writer.add_summary(summary, step)
-                                if(final_acc >= target_acc)
-                                    break
+
 				count += 1
 				if count % frequency == 0 or i+1 == batch_count:
 					elapsed_time = time.time() - start_time
@@ -165,3 +169,4 @@ elif FLAGS.job_name == "worker":
 
 	sv.stop()
 	print("done")
+'''        
