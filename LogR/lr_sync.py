@@ -174,7 +174,7 @@ def main(unused_argv):
       # Training feed
       batch_count = int(mnist.train.num_examples/batch_size)
 
-      #for i in range(batch_count):
+      for i in range(batch_count):
       batch_xs, batch_ys = mnist.train.next_batch(FLAGS.batch_size)
       train_feed = {x: batch_xs, y_: batch_ys}
       
