@@ -1,6 +1,6 @@
 '''
 Distributed Tensorflow 1.2.0 example of using data parallelism and share model parameters.
-Trains a simple sigmoid neural network on mnist for 20 epochs. 
+Trains a simple logistic regression on mnist for 100 epochs. 
 
 '''
 
