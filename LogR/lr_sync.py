@@ -36,7 +36,7 @@ flags.DEFINE_integer("replicas_to_aggregate", None,
                      "Number of replicas to aggregate before parameter update"
                      "is applied (For sync_replicas mode only; default: "
                      "num_workers)")
-flags.DEFINE_integer("train_steps", 200,
+flags.DEFINE_integer("train_steps", 100,
                      "Number of (global) training steps to perform")
 flags.DEFINE_integer("batch_size", 100, "Training batch size")
 flags.DEFINE_float("learning_rate", 0.01, "Learning rate")
@@ -52,6 +52,7 @@ FLAGS = flags.FLAGS
 IMAGE_PIXELS = 28
 target_acc = FLAGS.target_acc
 batch_size = FLAGS.batch_size
+tot_epoch = FLAGS.train_steps
 
 def main(unused_argv):
     mnist = input_data.read_data_sets('/root/adaptive_dml/MNIST_data', one_hot=True)
@@ -86,15 +87,15 @@ def main(unused_argv):
         y_ = tf.placeholder(tf.float32, [None, 10])
 
         # Variables of the hidden layer
-        W1 = tf.Variable(tf.random_normal([784, 50]))
-        W2 = tf.Variable(tf.random_normal([50, 10]))
-        b1 = tf.Variable(tf.zeros([50]))
-        b2 = tf.Variable(tf.zeros([10]))
+        W1 = tf.Variable(tf.random_normal([784, 10]))
+        #W2 = tf.Variable(tf.random_normal([50, 10]))
+        b1 = tf.Variable(tf.zeros([10]))
+        #b2 = tf.Variable(tf.zeros([10]))
         # Variables of the softmax layer
-        z2 = tf.add(tf.matmul(x,W1),b1)
-        a2 = tf.nn.sigmoid(z2)
-        z3 = tf.add(tf.matmul(a2,W2),b2)
-        y = tf.nn.softmax(z3)
+        y = tf.add(tf.matmul(x,W1),b1)
+        #a2 = tf.nn.sigmoid(z2)
+        #z3 = tf.add(tf.matmul(a2,W2),b2)
+        #y = tf.nn.softmax(z3)
 
    
         cross_entropy =tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y), reduction_indices=[1]))
@@ -168,7 +169,8 @@ def main(unused_argv):
     local_step = 0
     final_acc = 0
     #while( final_acc < target_acc):
-    while True:
+    #while True:
+    for local_step in range(tot_epoch):
       # Training feed
       batch_count = int(mnist.train.num_examples/batch_size)
 
@@ -178,7 +180,7 @@ def main(unused_argv):
       
       _, step = sess.run([train_step, global_step], feed_dict=train_feed)
       final_acc = sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels})
-      local_step += 1
+#      local_step += 1
       
       now = time.time()
       if local_step % 100 ==0 or local_step+1 == batch_count:
