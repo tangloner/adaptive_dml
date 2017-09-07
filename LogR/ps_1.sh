@@ -34,7 +34,7 @@ get_worker_conf $1 $2
 echo $worker
 
 
-mkdir /root/adaptive_dml/LogR/result/$1"-"$2".sync"
+mkdir /root/adaptive_dml/LogR/result/$1"-"$2".async"
  
 for(( i=35; i>35-$1-$2; i-- ))
 do
