@@ -186,8 +186,8 @@ def main(unused_argv):
         now = time.time()
         if local_step % 100 ==0 or local_step+1 == batch_count:
           print("Worker %d: Step: %d," % (FLAGS.task_index, step+1), "Epoch: %2d, " % int(step/batch_count), "Batch: %3d of %3d, " % (step%batch_count, batch_count), "AvgTime: %3.2fms "% float(now-time_begin))
-      if final_acc >= target_acc:
-        break
+#      if final_acc >= target_acc:
+#        break
 
  
     time_end = time.time()
