@@ -1,11 +1,11 @@
 #!/bin/bash
 # $1 is the number of PSs
 # $2 is the number of workers
-# ps.sh run in ssd35
+# ps.sh run in ssd42
 
 get_ps_conf(){
     ps=""
-    for(( i=35; i > 35-$1; i-- ))
+    for(( i=42; i > 42-$1; i-- ))
     do
         ps="$ps,ssd$i:2222"
     done
@@ -14,7 +14,7 @@ get_ps_conf(){
 
 get_worker_conf(){
     worker=""
-    for(( i=35-$1; i > 35-$1-$2; i-- ))
+    for(( i=42-$1; i > 42-$1-$2; i-- ))
     do
         worker="$worker,ssd$i:2222"
     done
@@ -36,24 +36,24 @@ echo $worker
 
 mkdir /root/adaptive_dml/LogR/result/$1"-"$2".async"
  
-for(( i=35; i>35-$1-$2; i-- ))
+for(( i=42; i>42-$1-$2; i-- ))
 do
 {
-    if [ $i == 35 ]
+    if [ $i == 42 ]
     then
         source /root/anaconda2/envs/tensorflow/bin/activate
         python /root/adaptive_dml/LogR/lr.py $ps $worker --job_name=ps --task_index=0 >> /root/adaptive_dml/LogR/result/$1"-"$2".async"/ps0.txt
         echo $ps $worker " done."
     else
 	ssh ssd$i "source activate tensorflow"
-        n=`expr 35 - $1`
+        n=`expr 42 - $1`
         if [ $i -gt $n ]
         then
-            index=`expr 35 - $i`
+            index=`expr 42 - $i`
             ssh ssd$i python /root/adaptive_dml/LogR/lr.py $ps $worker --job_name=ps --task_index=$index >> /root/adaptive_dml/LogR/result/$1"-"$2".async"/ps"$index".txt
             echo "ps "$index "done!"
         else
-            index=`expr 35 - $1 - $i`
+            index=`expr 42 - $1 - $i`
             ssh ssd$i python /root/adaptive_dml/LogR/lr.py $ps $worker --job_name=worker --task_index=$index >> /root/adaptive_dml/LogR/result/$1"-"$2".async"/worker"$index".txt
             echo "worker "$index " done!" 
             echo "1">temp$index
@@ -75,7 +75,7 @@ do
     done	
     if [ $flag == $2 ]
     then
-    	./kill_cluster_pid.sh 26 35 2222
+    	./kill_cluster_pid.sh 26 42 2222
 	break
     fi
 done 
