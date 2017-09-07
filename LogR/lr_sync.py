@@ -168,23 +168,24 @@ def main(unused_argv):
     print("Training begins...")
     local_step = 0
     final_acc = 0
+    epcho = 0
     #while( final_acc < target_acc):
     #while True:
-    for local_step in range(tot_epoch):
+    for epoch in range(tot_epoch):
       # Training feed
       batch_count = int(mnist.train.num_examples/batch_size)
-#      local_step += 1
+      local_step = 0
 
       for i in range(batch_count):
         batch_xs, batch_ys = mnist.train.next_batch(FLAGS.batch_size)
         train_feed = {x: batch_xs, y_: batch_ys}
         _, step = sess.run([train_step, global_step], feed_dict=train_feed)
         final_acc = sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels})
-#      local_step += 1
+        local_step += 1
       
-      now = time.time()
-      if local_step % 100 ==0 or local_step+1 == batch_count:
-        print("Worker %d: Step: %d," % (FLAGS.task_index, step+1), "Epoch: %2d, " % int(step/batch_count), "Batch: %3d of %3d, " % (step%batch_count, batch_count), "AvgTime: %3.2fms "% float(now-time_begin))
+        now = time.time()
+        if local_step % 100 ==0 or local_step+1 == batch_count:
+          print("Worker %d: Step: %d," % (FLAGS.task_index, step+1), "Epoch: %2d, " % int(step/batch_count), "Batch: %3d of %3d, " % (step%batch_count, batch_count), "AvgTime: %3.2fms "% float(now-time_begin))
       if final_acc >= target_acc:
         break
 
