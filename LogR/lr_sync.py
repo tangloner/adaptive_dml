@@ -173,13 +173,13 @@ def main(unused_argv):
     for local_step in range(tot_epoch):
       # Training feed
       batch_count = int(mnist.train.num_examples/batch_size)
+#      local_step += 1
 
       for i in range(batch_count):
-      batch_xs, batch_ys = mnist.train.next_batch(FLAGS.batch_size)
-      train_feed = {x: batch_xs, y_: batch_ys}
-      
-      _, step = sess.run([train_step, global_step], feed_dict=train_feed)
-      final_acc = sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels})
+        batch_xs, batch_ys = mnist.train.next_batch(FLAGS.batch_size)
+        train_feed = {x: batch_xs, y_: batch_ys}
+        _, step = sess.run([train_step, global_step], feed_dict=train_feed)
+        final_acc = sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels})
 #      local_step += 1
       
       now = time.time()
