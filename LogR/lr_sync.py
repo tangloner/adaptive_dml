@@ -45,7 +45,7 @@ flags.DEFINE_boolean("sync_replicas", True,
                      "wherein the parameter updates from workers are aggregated "
                      "before applied to avoid stale gradients")
 flags.DEFINE_string("job_name", None,"job name: worker or ps")
-flags.DEFINE_float("target_acc", 0.9, "The target accuracy of trained model")
+flags.DEFINE_float("target_acc", 0.4, "The target accuracy of trained model")
 FLAGS = flags.FLAGS
 
 
@@ -170,8 +170,8 @@ def main(unused_argv):
     final_acc = 0
     epcho = 0
     #while( final_acc < target_acc):
-    #while True:
-    for epoch in range(tot_epoch):
+    while True:
+    #for epoch in range(tot_epoch):
       # Training feed
       print("%d" % epoch)
       print("%d" % tot_epoch)
@@ -189,8 +189,8 @@ def main(unused_argv):
         now = time.time()
         if local_step % 100 ==0 or local_step+1 == batch_count:
           print("Worker %d: Step: %d," % (FLAGS.task_index, step+1), "Epoch: %2d, " % int(step/batch_count), "Batch: %3d of %3d, " % (step%batch_count, batch_count), "AvgTime: %3.2fms "% float(now-time_begin))
-#      if final_acc >= target_acc:
-#        break
+      if final_acc >= target_acc:
+        break
 
  
     time_end = time.time()
